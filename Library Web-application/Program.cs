@@ -1,4 +1,7 @@
 
+using Library_Web_application.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Library_Web_application
 {
     public class Program
@@ -6,6 +9,9 @@ namespace Library_Web_application
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddDbContext<LibraryDbContext>(options => options.UseSqlServer
+                                  (builder.Configuration.GetConnectionString("LibraryConnection")));
 
             // Add services to the container.
 
