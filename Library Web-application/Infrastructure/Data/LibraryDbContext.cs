@@ -1,7 +1,7 @@
 ﻿using Library_Web_application.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library_Web_application.Data
+namespace Library_Web_application.Infrastructure.Data
 {
     public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbContext(options)
     {
