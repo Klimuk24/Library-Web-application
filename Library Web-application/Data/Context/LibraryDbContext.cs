@@ -1,7 +1,7 @@
 ﻿using Library_Web_application.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library_Web_application.Infrastructure.Data
+namespace Library_Web_application.Data.Context
 {
     public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbContext(options)
     {
@@ -15,8 +15,8 @@ namespace Library_Web_application.Infrastructure.Data
             {
                 entity.HasKey(b => b.Id);
                 entity.HasIndex(b => b.ISBN).IsUnique();
-                entity.Property(b => b.Title).IsRequired().HasMaxLength(100);
-                entity.Property(b => b.ISBN).IsRequired().HasMaxLength(17); // ISBN-13 format
+                entity.Property(b => b.Title).IsRequired().HasMaxLength(128);
+                entity.Property(b => b.ISBN).IsRequired().HasMaxLength(17); // ISBN-13 
 
                 entity.HasOne(b => b.Author)
                     .WithMany(a => a.Books)
@@ -26,9 +26,9 @@ namespace Library_Web_application.Infrastructure.Data
             modelBuilder.Entity<Author>(entity =>
             {
                 entity.HasKey(a => a.Id);
-                entity.Property(a => a.FirstName).IsRequired().HasMaxLength(50);
-                entity.Property(a => a.LastName).IsRequired().HasMaxLength(50);
-                entity.Property(a => a.Country).IsRequired().HasMaxLength(60);
+                entity.Property(a => a.FirstName).IsRequired().HasMaxLength(32);
+                entity.Property(a => a.LastName).IsRequired().HasMaxLength(32);    
+                entity.Property(a => a.Country).IsRequired().HasMaxLength(64);
             });
         }
     }
