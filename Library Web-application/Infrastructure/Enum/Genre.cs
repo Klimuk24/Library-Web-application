@@ -5,7 +5,7 @@
     /// (Action, Biography, Classic, Detective
     /// Drama, Fantasy, Horror, Novel)
     /// </summary>
-    public enum Genre
+    public enum Genre : byte
     {
         Action = 1,
         Biography,

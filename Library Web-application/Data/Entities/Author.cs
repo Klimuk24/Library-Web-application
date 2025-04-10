@@ -3,7 +3,7 @@
 namespace Library_Web_application.Domain.Entities
 {
     /// <summary>
-    /// Сущность автора книги
+    /// Сущность: Автор книг
     /// </summary>
     public class Author
     {

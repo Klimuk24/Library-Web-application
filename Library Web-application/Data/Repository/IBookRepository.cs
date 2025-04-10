@@ -10,11 +10,9 @@ namespace Library_Web_application.Data.Repository
         void InsertBook(Book book); // добавление новой книги
         void UpdateBook(Book book); // обновление ифнормации об книге
         void DeleteBookByID(int bookId); // удаление книги по ID
-
-        // TODO -> Other functional:
-        // Выдача книг на руки пользователю
-        // Возможность добавления изображения к книге и его хранение
-        // * Отправка уведомления об истечении срока выдачи книги (будет плюсом)
+        void CheckOutBookAsync(int bookId, int userId, DateTime dueDate); // Выдача книг на руки пользователю
+        void AddBookImage(int bookId, byte[] imageData, string contentType); // Возможность добавления изображения к книге и его хранение
+        void SendReminderMessage(int bookId); // * Отправка уведомления об истечении срока выдачи книги 
         void Save();  // сохранение изменений
     }
 }

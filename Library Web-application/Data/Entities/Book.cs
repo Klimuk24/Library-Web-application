@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Library_Web_application.Domain.Entities
 {
     /// <summary>
-    /// Сущность книги в библиотеке
+    /// Сущность: Книга библиотеки
     /// </summary>
     public class Book
     {
