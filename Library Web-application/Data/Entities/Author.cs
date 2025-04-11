@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Library_Web_application.Domain.Entities
+﻿namespace Library_Web_application.Data.Entities
 {
     /// <summary>
     /// Сущность: Автор книг
@@ -10,6 +8,7 @@ namespace Library_Web_application.Domain.Entities
         public int Id { get; set; } // Уникальный идентификатор автора
         public string FirstName { get; set; } // Имя автора
         public string LastName { get; set; } // Фамилия автора
+        
         public DateTime BirthDate { get; set; } // Дата рождения автора
         public string Country { get; set; } // Страна происхождения автора
 

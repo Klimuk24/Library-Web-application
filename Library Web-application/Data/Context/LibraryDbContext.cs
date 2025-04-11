@@ -1,4 +1,4 @@
-﻿using Library_Web_application.Domain.Entities;
+﻿using Library_Web_application.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_Web_application.Data.Context
