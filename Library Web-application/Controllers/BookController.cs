@@ -1,6 +1,5 @@
 using Library_Web_application.Data.Entities;
 using Library_Web_application.Data.Repository.Interfaces;
-using Library_Web_application.Infrastructure.Enum;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library_Web_application.Controllers;
@@ -11,13 +10,10 @@ public class BookController : Controller
 {
     private readonly IBookRepository _bookRepository;
     private readonly IBookRepository _authorRepository;
-    private readonly IWebHostEnvironment _environment;
-
-    public BookController(IBookRepository bookRepository, IBookRepository authorRepository, IWebHostEnvironment environment)
+    public BookController(IBookRepository bookRepository, IBookRepository authorRepository)
     {
         _bookRepository = bookRepository;
         _authorRepository = authorRepository;
-        _environment = environment;
     }
 
     // Получение всех книг
