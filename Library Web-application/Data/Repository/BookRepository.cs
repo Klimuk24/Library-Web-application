@@ -1,109 +1,83 @@
 ﻿using Library_Web_application.Data.Context;
 using Library_Web_application.Data.Entities;
-using Microsoft.EntityFrameworkCore;
+using Library_Web_application.Data.Repository.Interfaces;
 
 namespace Library_Web_application.Data.Repository
 {
-    public class BookRepository : IBookRepository
+    public class BookRepository : BaseRepository<Book>, IBookRepository
     {
-        private readonly LibraryDbContext _context;
+         private readonly IWebHostEnvironment _environment;
 
-        public BookRepository(LibraryDbContext context)
+    public BookRepository(LibraryDbContext context, IWebHostEnvironment environment) : base(context)
+    {
+        _environment = environment;
+    }
+
+    public void BorrowBook(int bookId, DateTime returnDueDate)
+    {
+        var book = GetById(bookId); 
+        if (book == null)
+            throw new KeyNotFoundException($"Book with id {bookId} not found");
+
+        if (book.BorrowedTime != null)
+            throw new InvalidOperationException("Book is already borrowed");
+
+        book.BorrowedTime = DateTime.Now;
+        book.ReturnDueTime = returnDueDate;
+        
+        Save(); 
+    }
+
+    public void ReturnBook(int bookId)
+    {
+        var book = GetById(bookId);
+        if (book == null)
+            throw new KeyNotFoundException($"Book with id {bookId} not found");
+
+        book.BorrowedTime = null;
+        book.ReturnDueTime = null;
+        
+        Save();
+    }
+
+    public void AddOrUpdateImage(int bookId, IFormFile imageFile)
+    {
+        var book = GetById(bookId);
+        if (book == null)
+            throw new KeyNotFoundException($"Book with id {bookId} not found");
+
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "images", "books");
+        if (!Directory.Exists(uploadsFolder))
         {
-            _context = context;
+            Directory.CreateDirectory(uploadsFolder);
         }
 
-        public IEnumerable<Book> GetBookList()
+        var fileName = $"{bookId}_{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
-            return _context.Books.Include(b => b.Author).ToList();
+            imageFile.CopyTo(fileStream);
         }
 
-        public Book GetBookById(int bookId)
+        if (!string.IsNullOrEmpty(book.ImagePath))
         {
-            return _context.Books.Include(b => b.Author).FirstOrDefault(b => b.Id == bookId);
-        }
-
-        public Book GetBookByISBN(string isbn)
-        {
-            return _context.Books.Include(b => b.Author).FirstOrDefault(b => b.ISBN == isbn);
-        }
-
-        public void InsertBook(Book book)
-        {
-            _context.Books.Add(book);
-        }
-
-        public void UpdateBook(Book book)
-        {
-            _context.Entry(book).State = EntityState.Modified;
-        }
-
-        public void DeleteBookById(int bookId)
-        {
-            var book = _context.Books.Find(bookId);
-            if (book != null)
-                _context.Books.Remove(book);
-        }
-
-        public void CheckOutBookAsync(int bookId, int userId, DateTime dueDate)
-        {
-            var book = _context.Books.Find(bookId);
-            if (book != null)
+            var oldFilePath = Path.Combine(_environment.WebRootPath, book.ImagePath.TrimStart('/'));
+            if (File.Exists(oldFilePath))
             {
-                book.BorrowedTime = DateTime.Now;
-                book.ReturnDueTime = dueDate;
-                _context.Entry(book).State = EntityState.Modified;
+                File.Delete(oldFilePath);
             }
         }
 
-        public void AddBookImage(int bookId, byte[] imageData, string contentType)
-        {
-            var book = _context.Books.Find(bookId);
-            if (book != null)
-            {
-                // Здесь можно сохранить изображение в файловой системе или в базе данных
-                // Для примера сохраняем путь к файлу
-                var fileName = $"{bookId}_{DateTime.Now:yyyyMMddHHmmss}.{contentType.Split('/')[1]}";
-                var filePath = Path.Combine("wwwroot/images", fileName);
-                File.WriteAllBytes(filePath, imageData);
-                book.ImagePath = $"/images/{fileName}";
-                _context.Entry(book).State = EntityState.Modified;
-            }
-        }
+        book.ImagePath = $"/images/books/{fileName}";
+        Save();
+    }
 
-        public void SendReminderMessage(int bookId)
-        {
-            var book = _context.Books.Find(bookId);
-            if (book != null && book.ReturnDueTime.HasValue && book.ReturnDueTime.Value < DateTime.Now)
-            {
-                // Здесь должна быть логика отправки уведомления
-                // через email или систему сообщений
-            }
-        }
-
-        public void Save()
-        {
-            _context.SaveChanges();
-        }
-
-        private bool _disposed = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _context.Dispose();
-                }
-            }
-            _disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+    public IEnumerable<Book> GetOverdueBooks()
+    {
+        return DbSet 
+            .Where(b => b.ReturnDueTime != null && b.ReturnDueTime < DateTime.Now)
+            .ToList();
+    }
     }
 }

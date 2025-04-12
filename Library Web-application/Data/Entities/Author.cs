@@ -1,4 +1,6 @@
-﻿namespace Library_Web_application.Data.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Library_Web_application.Data.Entities
 {
     /// <summary>
     /// Сущность: Автор книг

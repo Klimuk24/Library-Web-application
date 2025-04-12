@@ -1,4 +1,6 @@
 using Library_Web_application.Data.Context;
+using Library_Web_application.Data.Repository;
+using Library_Web_application.Data.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_Web_application
@@ -9,8 +11,11 @@ namespace Library_Web_application
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+            builder.Services.AddScoped<IBookRepository, BookRepository>();
+            
             builder.Services.AddDbContext<LibraryDbContext>(options => options.UseSqlServer
-                                  (builder.Configuration.GetConnectionString("LibraryConnection")));
+                (builder.Configuration.GetConnectionString("LibraryConnection")));
 
             // Add services to the container.
 
