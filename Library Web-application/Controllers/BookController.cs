@@ -10,11 +10,13 @@ namespace Library_Web_application.Controllers;
 public class BookController : Controller
 {
     private readonly IBookRepository _bookRepository;
+    private readonly IBookRepository _authorRepository;
     private readonly IWebHostEnvironment _environment;
 
-    public BookController(IBookRepository bookRepository, IWebHostEnvironment environment)
+    public BookController(IBookRepository bookRepository, IBookRepository authorRepository, IWebHostEnvironment environment)
     {
         _bookRepository = bookRepository;
+        _authorRepository = authorRepository;
         _environment = environment;
     }
 
@@ -36,7 +38,7 @@ public class BookController : Controller
 
     // Получение книги по ISBN
     [HttpGet("isbn/{isbn}")]
-    public IActionResult GetByISBN(string isbn)
+    public IActionResult GetByIsbn(string isbn)
     {
         var book = _bookRepository.GetByCondition(b => b.ISBN == isbn).FirstOrDefault();
         if (book == null) return NotFound();
@@ -47,8 +49,17 @@ public class BookController : Controller
     [HttpGet("{authorId}/books")]
     public IActionResult GetBooksByAuthor(int authorId)
     {
-        // Используем GetByCondition для фильтрации книг по автору
-        var books = _bookRepository.GetByCondition(b => b.AuthorId == authorId);
+        var anyBookExists = _bookRepository.GetByCondition(b => b.AuthorId == authorId).Any();
+    
+        if (!anyBookExists)
+        {
+            var authorExists = _authorRepository.GetById(authorId) != null;
+            if (!authorExists)
+            {
+                return NotFound($"Author with id {authorId} not found");
+            }
+        }
+        var books = _bookRepository.GetByCondition(b => b.AuthorId == authorId).ToList();
         return Ok(books);
     }
 
@@ -56,8 +67,16 @@ public class BookController : Controller
     [HttpPost]
     public IActionResult Create([FromBody] Book book)
     {
+        if (_authorRepository.GetById(book.AuthorId) == null)
+        {
+            return BadRequest($"Author with id {book.AuthorId} not found");
+        }
+        
+        book.Author = null!; 
+
         _bookRepository.Add(book);
         _bookRepository.Save();
+    
         return CreatedAtAction(nameof(GetById), new { id = book.Id }, book);
     }
 
@@ -114,6 +133,13 @@ public class BookController : Controller
             return BadRequest(ex.Message);
         }
     }
+    
+    // Просроченные книги
+    [HttpGet("overdue")]
+    public IActionResult GetOverdueBooks()
+    {
+        return Ok(_bookRepository.GetOverdueBooks());
+    }
 
     // Загрузка изображения
     [HttpPost("{id}/upload-image")]
@@ -131,24 +157,5 @@ public class BookController : Controller
         {
             return BadRequest(ex.Message);
         }
-    }
-
-    // Просроченные книги
-    [HttpGet("overdue")]
-    public IActionResult GetOverdueBooks()
-    {
-        return Ok(_bookRepository.GetOverdueBooks());
-    }
-
-    // Поиск по названию/жанру
-    [HttpGet("search")]
-    public IActionResult Search(string title, Genre? genre)
-    {
-        var books = _bookRepository.GetByCondition(b =>
-            (string.IsNullOrEmpty(title) || b.Title.Contains(title)) &&
-            (!genre.HasValue || b.Genre == genre.Value)
-        ).ToList();
-        
-        return Ok(books);
     }
 }

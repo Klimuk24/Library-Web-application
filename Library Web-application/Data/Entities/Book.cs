@@ -1,4 +1,5 @@
-﻿using Library_Web_application.Infrastructure.Enum;
+﻿using System.Text.Json.Serialization;
+using Library_Web_application.Infrastructure.Enum;
 
 namespace Library_Web_application.Data.Entities
 {
@@ -20,6 +21,6 @@ namespace Library_Web_application.Data.Entities
         public DateTime? ReturnDueTime { get; set; } // Дата и время, когда книга должна быть возвращена
 
         public string? ImagePath { get; set; } // Путь к изображению книги
-        public Author Author { get; set; } // Автор книги (навигационное свойство)
+        [JsonIgnore] public Author Author { get; set; } // Автор книги (навигационное свойство)
     }
 }
