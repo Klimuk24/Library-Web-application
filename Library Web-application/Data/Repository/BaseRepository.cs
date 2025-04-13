@@ -16,7 +16,7 @@ public class BaseRepository<T>: IRepository<T> where T : class
         DbSet = Context.Set<T>(); 
     }
     
-    public IEnumerable<T> GetAll()
+    public virtual IEnumerable<T> GetAll()
     {
         return DbSet;
     }
@@ -26,7 +26,7 @@ public class BaseRepository<T>: IRepository<T> where T : class
         return DbSet.Where(expression);
     }
 
-    public T GetById(int id)
+    public virtual T GetById(int id)
     {
         return DbSet.Find(id);
     }

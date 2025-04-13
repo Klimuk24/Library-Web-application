@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Library_Web_application.Data.Context;
 using Library_Web_application.Data.Repository;
 using Library_Web_application.Data.Repository.Interfaces;
@@ -18,8 +19,11 @@ namespace Library_Web_application
                 (builder.Configuration.GetConnectionString("LibraryConnection")));
 
             // Add services to the container.
-
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

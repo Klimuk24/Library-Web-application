@@ -47,15 +47,23 @@ public class AuthorController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult Update(int id, [FromBody] Author author)
     {
-        if (id != author.Id) return BadRequest();
-        
+        if (id != author.Id) 
+            return BadRequest("ID in URL and body don't match");
+    
         var existingAuthor = _authorRepository.GetById(id);
         if (existingAuthor == null)
         {
             return NotFound($"Author with id {id} not found");
         }
-        _authorRepository.Update(author);
+        
+        existingAuthor.FirstName = author.FirstName;
+        existingAuthor.LastName = author.LastName;
+        existingAuthor.BirthDate = author.BirthDate;
+        existingAuthor.Country = author.Country;
+
+        _authorRepository.Update(existingAuthor); 
         _authorRepository.Save();
+    
         return NoContent();
     }
 

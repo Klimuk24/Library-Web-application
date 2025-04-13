@@ -14,9 +14,9 @@ namespace Library_Web_application.Data.Context
             modelBuilder.Entity<Book>(entity =>
             {
                 entity.HasKey(b => b.Id);
-                entity.HasIndex(b => b.ISBN).IsUnique();
+                entity.HasIndex(b => b.Isbn).IsUnique();
                 entity.Property(b => b.Title).IsRequired().HasMaxLength(128);
-                entity.Property(b => b.ISBN).IsRequired().HasMaxLength(17); // ISBN-13 
+                entity.Property(b => b.Isbn).IsRequired().HasMaxLength(17); // ISBN-13 
 
                 entity.HasOne(b => b.Author)
                     .WithMany(a => a.Books)

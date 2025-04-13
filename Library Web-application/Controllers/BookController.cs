@@ -9,8 +9,8 @@ namespace Library_Web_application.Controllers;
 public class BookController : Controller
 {
     private readonly IBookRepository _bookRepository;
-    private readonly IBookRepository _authorRepository;
-    public BookController(IBookRepository bookRepository, IBookRepository authorRepository)
+    private readonly IAuthorRepository _authorRepository;
+    public BookController(IBookRepository bookRepository, IAuthorRepository authorRepository)
     {
         _bookRepository = bookRepository;
         _authorRepository = authorRepository;
@@ -36,7 +36,7 @@ public class BookController : Controller
     [HttpGet("isbn/{isbn}")]
     public IActionResult GetByIsbn(string isbn)
     {
-        var book = _bookRepository.GetByCondition(b => b.ISBN == isbn).FirstOrDefault();
+        var book = _bookRepository.GetByCondition(b => b.Isbn == isbn).FirstOrDefault();
         if (book == null) return NotFound();
         return Ok(book);
     }
@@ -63,26 +63,73 @@ public class BookController : Controller
     [HttpPost]
     public IActionResult Create([FromBody] Book book)
     {
-        if (_authorRepository.GetById(book.AuthorId) == null)
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
+        var author = _authorRepository.GetById(book.AuthorId);
+        if (author == null)
         {
             return BadRequest($"Author with id {book.AuthorId} not found");
         }
         
-        book.Author = null!; 
+        var newBook = new Book
+        {
+            Isbn = book.Isbn,
+            Title = book.Title,
+            Description = book.Description,
+            Genre = book.Genre,
+            AuthorId = book.AuthorId,
+            BorrowedTime = null,
+            ReturnDueTime = null
+        };
 
-        _bookRepository.Add(book);
+        _bookRepository.Add(newBook);
         _bookRepository.Save();
-    
-        return CreatedAtAction(nameof(GetById), new { id = book.Id }, book);
+        
+        var createdBook = _bookRepository.GetById(newBook.Id);
+        return CreatedAtAction(nameof(GetById), new { id = newBook.Id }, createdBook);
     }
 
     // Обновление книги
     [HttpPut("{id}")]
     public IActionResult Update(int id, [FromBody] Book book)
     {
-        if (id != book.Id) return BadRequest();
-        _bookRepository.Update(book);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (id != book.Id)
+        {
+            return BadRequest("ID in URL and body don't match");
+        }
+
+        var existingBook = _bookRepository.GetById(id);
+        if (existingBook == null)
+        {
+            return NotFound($"Book with id {id} not found");
+        }
+        
+        if (existingBook.AuthorId != book.AuthorId)
+        {
+            var newAuthor = _authorRepository.GetById(book.AuthorId);
+            if (newAuthor == null)
+            {
+                return BadRequest($"Author with id {book.AuthorId} not found");
+            }
+        }
+        
+        existingBook.Isbn = book.Isbn;
+        existingBook.Title = book.Title;
+        existingBook.Description = book.Description;
+        existingBook.Genre = book.Genre;
+        existingBook.AuthorId = book.AuthorId;
+
+        _bookRepository.Update(existingBook);
         _bookRepository.Save();
+
         return NoContent();
     }
 
