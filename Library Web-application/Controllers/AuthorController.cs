@@ -78,4 +78,18 @@ public class AuthorController : ControllerBase
         _authorRepository.Save();
         return NoContent();
     }
+    
+    // Тестовый GET для проверки пагинации 
+    [HttpGet("paged")]
+    public IActionResult GetPagedAuthors(
+        [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = null)
+    {
+        if (pageNumber < 1 || pageSize < 1)
+        {
+            return BadRequest("Invalid pagination parameters");
+        }
+
+        var result = _authorRepository.GetPagedAuthors(pageNumber, pageSize, search);
+        return Ok(result);
+    }
 }

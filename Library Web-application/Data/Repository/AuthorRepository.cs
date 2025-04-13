@@ -1,6 +1,8 @@
-﻿using Library_Web_application.Data.Context;
+﻿using System.Linq.Expressions;
+using Library_Web_application.Data.Context;
 using Library_Web_application.Data.Entities;
 using Library_Web_application.Data.Repository.Interfaces;
+using Library_Web_application.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_Web_application.Data.Repository
@@ -19,6 +21,21 @@ namespace Library_Web_application.Data.Repository
         public override Author GetById(int id)
         {
             return DbSet.Include(a => a.Books).FirstOrDefault(a => a.Id == id);
+        }
+        
+        public PagedResult<Author> GetPagedAuthors(int pageNumber, int pageSize, string searchTerm = null)
+        {
+            Expression<Func<Author, bool>> filter = null;
+    
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                filter = a => a.FirstName.Contains(searchTerm) 
+                              || a.LastName.Contains(searchTerm);
+            }
+
+            return GetPaged(query => query.OrderBy(a => a.LastName),
+                pageNumber, pageSize, filter
+            );
         }
     }
 }
