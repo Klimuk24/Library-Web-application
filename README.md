@@ -10,7 +10,7 @@
 
 - .NET 8.0
 - Entity Framework Core 9.0.0+
-- SQL Server
+- MS SQL Server
 - Swagger (OpenAPI)
 - xUnit (тестирование)
 
@@ -23,14 +23,23 @@
 
 ## Структура проекта
 Library.tests/         # unit-тесты
+
 Library-Web-application/
+
 ├── Controllers/       # API контроллеры
+
 ├── Data/              # Работа с данными
+
 │   ├── Context/       # DB контекст
+
 │   ├── Entities/      # Модели
+
 │   └── Repository/    # Паттерн Repository
+
 ├── Middleware/        # Обработка ошибок
+
 ├── Services/          # Бизнес-логика
+
 └── appsettings.json   # Конфигурация
 
 ## Установка и запуск
@@ -42,17 +51,19 @@ Library-Web-application/
 
 2. **Настройте базу данных**:
 
-- Создайте БД в SQL Server
-- Обновите строку подключения в appsettings.json:
+- Обновите строку подключения в appsettings.json при необходимости:
+```bash
 "ConnectionStrings": {
   "LibraryConnection": "Server=localhost;Database=LibraryDB;Trusted_Connection=True;TrustServerCertificate=True;"
 }
+```
 
 3. **Примените миграции**:
 
-bash:
+```bash
 dotnet ef database update --project Library-Web-application
 или через Update-Database
+```
 
 4. **Запустите приложение**:
 
@@ -62,12 +73,15 @@ dotnet ef database update --project Library-Web-application
 
 После запуска должна открытся страница документации Swagger
 Swagger UI: https://localhost:5001/swagger
+
 ![swagger_ui](https://github.com/user-attachments/assets/adae48fa-708a-47a9-a2f2-8da6c3808aa5)
 
 ## Тестирование
 
 Для запуска тестов выполните:
-bash: dotnet test
+```bash
+dotnet test
+```
 или через команду Tests --> Run test в вашей IDE
 
 ## Основные endpoints
@@ -111,14 +125,17 @@ bash: dotnet test
 ## Примеры json запросов
 
 **Добавление автора**:
+```bash
 {
   "firstName": "Лев",
   "lastName": "Толстой",
   "country": "Россия",
   "birthDate": "1828-09-09"
 }
+```
 
 **Добавление книги**:
+```bash
 {
     "id": 11,  
     "isbn": "978-5-17-090823-5",
@@ -130,6 +147,9 @@ bash: dotnet test
     "returnDueTime": null,
     "authorId": 1
   }
+```
 
 **Выдача книги**:
+```bash
 "2024-12-31T00:00:00"'
+```
