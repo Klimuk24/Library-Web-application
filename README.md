@@ -21,6 +21,12 @@
 - EF 9.0.0+ (либо другой совместимый с .NET 8.0)
 - IDE (Visual Studio 2022, Rider или VS Code)
 
+## Архитектура/Подходы/Принципы
+
+- Clean Architechture 
+- Code First
+- REST
+
 ## Структура проекта
 Library.tests/         # unit-тесты
 
