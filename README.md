@@ -60,7 +60,7 @@ Library-Web-application/
 - Обновите строку подключения в appsettings.json при необходимости:
 ```bash
 "ConnectionStrings": {
-  "LibraryConnection": "Server=localhost;Database=LibraryDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  "LibraryConnection": "Server=localhost\SQLEXPRESS;Database=LibraryDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;"
 }
 ```
 
