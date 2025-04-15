@@ -155,7 +155,33 @@ dotnet test
     "authorId": 1
   }
 ```
-  
+
+**Изменение автора**:
+```bash
+{
+  "id": 1,
+  "birthDate": "2025-04-15T08:53:15.278Z",
+  "firstName": "Max",
+  "lastName": "Klimuk",
+  "country": "Belarus"
+}
+```
+
+**Изменение книги**:
+```bash
+{
+  "id": 1,
+  "authorId": 1,
+  "isbn": "100-11-1100-100-1",
+  "title": "string",
+  "description": "string",
+  "imagePath": "string",
+  "genre": 1,
+  "borrowedTime": "2025-04-15T08:54:22.718Z",
+  "returnDueTime": "2025-04-15T08:54:22.718Z"
+}
+```
+
 **Выдача книги**:
 - В теле запроса указываем время истечения срока возврата взятой книги
 ```bash
