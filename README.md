@@ -4,6 +4,8 @@
 
 ✅Unit-tests реализованы (для модели Автора).
 
+✅Пагинация с фильтрами реализована (только для модели Автора, как пример). 
+
 ❌Frontend-клиентская часть не реализована.
 
 ❌Policy-based авторизация не реализована.
@@ -31,29 +33,6 @@
 - Code First
 - REST
 
-## Структура проекта
-Library.tests/         # unit-тесты
-
-Library-Web-application/
-
-├── Controllers/       # API контроллеры
-
-├── Data/              # Работа с данными
-
-│   ├── Context/       # DB контекст
-
-│   ├── Entities/      # Модели
-
-│   └── Repository/    # Паттерн Repository
-
-├── Middleware/        # Обработка ошибок
-
-├── Services/          # Бизнес-логика
-
-└── appsettings.json   # Конфигурация
-
-## Установка и запуск
-
 1. **Клонируйте репозиторий**:
    ```bash
    git clone https://github.com/ваш-репозиторий/library-api.git
@@ -61,7 +40,7 @@ Library-Web-application/
 
 2. **Настройте базу данных**:
 
-- Обновите строку подключения в appsettings.json при необходимости:
+- Обновите строку подключения в appsettings.json при необходимости (если используете другой провайдер):
 ```bash
 "ConnectionStrings": {
   "LibraryConnection": "Server=localhost\SQLEXPRESS;Database=LibraryDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;"
@@ -72,8 +51,11 @@ Library-Web-application/
 
 ```bash
 dotnet ef database update --project Library-Web-application
-или через Update-Database
 ```
+Или через меню в вашей IDE и убедитесь, что БД создалась и исправно работает.
+
+
+![image](https://github.com/user-attachments/assets/10e7751c-2e60-48f8-9778-f3037674fc51)
 
 4. **Запустите приложение**:
 
@@ -81,10 +63,19 @@ dotnet ef database update --project Library-Web-application
 
 5. **Документация API**:
 
-После запуска должна открытся страница документации Swagger
+После запуска должна открытся страница документации
 Swagger UI: https://localhost:5001/swagger
 
+
 ![swagger_ui](https://github.com/user-attachments/assets/adae48fa-708a-47a9-a2f2-8da6c3808aa5)
+
+6. **Проверка http запросов**
+
+Проверьте работу всех базовых http запросов через Swagger. Изменения должны корректно возврашатся http ответом и отображатся в БД
+
+
+![image](https://github.com/user-attachments/assets/7c2278c7-e05b-4981-9837-ccac99890bf0)
+
 
 ## Тестирование
 
@@ -97,7 +88,7 @@ dotnet test
 ## Основные endpoints
 
 **Автор**:
-- GET /api/authors - список всех авторов
+- GET /api/authors - список всех авторов (с пагинацией и фильтром для firstName и LastName)
 
 - POST /api/authors - добавить автора
 
@@ -107,22 +98,22 @@ dotnet test
 
 - DELETE /api/authors/{id} - удаление автора
 
-- GET /api/authors/paged?page=1&size=10 - пагинация авторов
+- GET /api/authors/{authorId}/books - Список книг автора
+
+
 
 **Книги**:
 - GET /api/books - список всех книг
 
 - POST /api/books - добавить книгу
 
-- GET /api/books/{id} - книна по id
+- GET /api/books/{id} - книга по id
 
 - PUT /api/books/{id} - обновить книгу
 
 - DELETE /api/books/{id} - удаление книги
 
 - GET /api/books/isbn/{isbn} - книна по isbn
-
-- GET /api/books/{authorId}/books - все книги по автору
 
 - POST /api/books/{id}/borrow - выдача книги со сроком её сдачи
 
@@ -148,7 +139,8 @@ dotnet test
 
 **Добавление книги**:
 ```bash
-{ 
+{
+    "id": 0,
     "isbn": "978-5-17-090823-5",
     "title": "Война и мир",
     "description": null,
@@ -161,14 +153,20 @@ dotnet test
 ```
   
 **Выдача книги**:
-- В теле запроса указываем время истечения срока выдачи взятой книги
+- В теле запроса указываем время истечения срока возврата взятой книги
 ```bash
-"id": 1,
+"bookId": 1,
 "2024-12-31T00:00:00"'
 ```
 
 **Получение книг с истекшим сроком**:
 - Вернет список книг, если те были взяты, а время срока возврата истекло
+
+
+- **Получение всех авторов**:
+- Без фильтра вернет всех авторов разделив данные на страницы
+- В фильтр можно указать firstName, lastName, country автора.
+
 
 **Загрузка изображения книги**:
 - Введите id книги и добавьте путь к изображению. После отработки запроса изображение будет хранится внутри проекта в пути: wwwroot/images/books
