@@ -33,6 +33,8 @@
 - Code First
 - REST
 
+## Запуск и работа с приложением
+
 1. **Клонируйте репозиторий**:
    ```bash
    git clone https://github.com/ваш-репозиторий/library-api.git
