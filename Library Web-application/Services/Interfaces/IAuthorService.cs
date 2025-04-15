@@ -4,8 +4,8 @@ namespace Library_Web_application.Services.Interfaces;
 
 public interface IAuthorService
 {
-    Author GetById(int id);
     IEnumerable<Author> GetAll();
+    Author GetById(int id);
     void Create(Author author);
     void Update(Author author);
     void Delete(int id);

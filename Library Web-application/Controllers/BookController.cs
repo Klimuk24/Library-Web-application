@@ -1,5 +1,7 @@
 using Library_Web_application.Data.Entities;
 using Library_Web_application.Data.Repository.Interfaces;
+using Library_Web_application.Infrastructure.Enum;
+using Library_Web_application.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library_Web_application.Controllers;
@@ -27,36 +29,28 @@ public class BookController : Controller
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
-        var book = _bookRepository.GetById(id);
-        if (book == null) return NotFound();
-        return Ok(book);
+        var book = _bookRepository.GetSingle(x => x.Id == id);
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(book); 
     }
 
     // Получение книги по ISBN
     [HttpGet("isbn/{isbn}")]
     public IActionResult GetByIsbn(string isbn)
     {
-        var book = _bookRepository.GetByCondition(b => b.Isbn == isbn).FirstOrDefault();
-        if (book == null) return NotFound();
-        return Ok(book);
-    }
-    
-    // Получение книг автора
-    [HttpGet("{authorId}/books")]
-    public IActionResult GetBooksByAuthor(int authorId)
-    {
-        var anyBookExists = _bookRepository.GetByCondition(b => b.AuthorId == authorId).Any();
-    
-        if (!anyBookExists)
+        var book = _bookRepository.GetSingle(b => b.Isbn == isbn);
+
+        if (book == null)
         {
-            var authorExists = _authorRepository.GetById(authorId) != null;
-            if (!authorExists)
-            {
-                return NotFound($"Author with id {authorId} not found");
-            }
+            return NotFound();
         }
-        var books = _bookRepository.GetByCondition(b => b.AuthorId == authorId).ToList();
-        return Ok(books);
+
+        return Ok(book);
     }
 
     // Добавление книги
@@ -68,7 +62,13 @@ public class BookController : Controller
             return BadRequest(ModelState);
         }
         
-        var author = _authorRepository.GetById(book.AuthorId);
+        if (book.AuthorId <= 0)
+        {
+            return BadRequest("AuthorId is required");
+        }
+    
+        var author = _authorRepository.GetSingle(x => x.Id == book.AuthorId);
+    
         if (author == null)
         {
             return BadRequest($"Author with id {book.AuthorId} not found");
@@ -81,40 +81,41 @@ public class BookController : Controller
             Description = book.Description,
             Genre = book.Genre,
             AuthorId = book.AuthorId,
-            BorrowedTime = null,
-            ReturnDueTime = null
+            BorrowedTime = book.BorrowedTime,
+            ReturnDueTime = book.ReturnDueTime
         };
 
         _bookRepository.Add(newBook);
         _bookRepository.Save();
-        
-        var createdBook = _bookRepository.GetById(newBook.Id);
-        return CreatedAtAction(nameof(GetById), new { id = newBook.Id }, createdBook);
+    
+        return CreatedAtAction(nameof(GetById), new { id = newBook.Id }, newBook);
     }
 
     // Обновление книги
-    [HttpPut("{id}")]
-    public IActionResult Update(int id, [FromBody] Book book)
+    [HttpPut]
+    public IActionResult Update([FromBody] Book book)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        if (id != book.Id)
+        if (book.Id <= 0)
         {
-            return BadRequest("ID in URL and body don't match");
+            return BadRequest("Book Id is required");
         }
 
-        var existingBook = _bookRepository.GetById(id);
+        var existingBook = _bookRepository.GetSingle(x => x.Id == book.Id);
+    
         if (existingBook == null)
         {
-            return NotFound($"Book with id {id} not found");
+            return NotFound($"Book with id {book.Id} not found");
         }
         
         if (existingBook.AuthorId != book.AuthorId)
         {
-            var newAuthor = _authorRepository.GetById(book.AuthorId);
+            var newAuthor = _authorRepository.GetSingle(x => x.Id == book.AuthorId);
+        
             if (newAuthor == null)
             {
                 return BadRequest($"Author with id {book.AuthorId} not found");
@@ -126,6 +127,8 @@ public class BookController : Controller
         existingBook.Description = book.Description;
         existingBook.Genre = book.Genre;
         existingBook.AuthorId = book.AuthorId;
+        existingBook.BorrowedTime = book.BorrowedTime;
+        existingBook.ReturnDueTime = book.ReturnDueTime;
 
         _bookRepository.Update(existingBook);
         _bookRepository.Save();
@@ -137,68 +140,75 @@ public class BookController : Controller
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {
-        var book = _bookRepository.GetById(id);
-        if (book == null) return NotFound();
-        
+        var book = _bookRepository.GetSingle(x => x.Id == id);
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
         _bookRepository.Delete(book);
         _bookRepository.Save();
-        return NoContent();
+        
+        return Ok();
     }
-
+    
     // Выдача книги
-    [HttpPost("{id}/borrow")]
-    public IActionResult BorrowBook(int id, [FromBody] DateTime returnDueDate)
+    [HttpPost("/borrow")]
+    public IActionResult BorrowBook([FromBody] BorrowModel model)
     {
-        try
+        var book = _bookRepository.GetSingle(x => x.Id == model.BookId);
+        
+        if (book == null)
         {
-            _bookRepository.BorrowBook(id, returnDueDate);
-            _bookRepository.Save();
-            return Ok();
+            throw new KeyNotFoundException($"Book with id {model.BookId} not found");
         }
-        catch (Exception ex)
+
+        if (book.BorrowedTime != null)
         {
-            return BadRequest(ex.Message);
+            throw new InvalidOperationException("Book is already borrowed");
         }
+
+        book.BorrowedTime = DateTime.Now;
+        book.ReturnDueTime = model.ReturnDueDate;
+        
+        _bookRepository.Update(book);
+        _bookRepository.Save();
+        
+        return Ok();
     }
 
     // Возврат книги
     [HttpPost("{id}/return")]
     public IActionResult ReturnBook(int id)
     {
-        try
-        {
-            _bookRepository.ReturnBook(id);
-            _bookRepository.Save();
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        _bookRepository.ReturnBook(id);
+        _bookRepository.Save();
+        
+        return Ok();
     }
     
-    // Просроченные книги
+    // Получение списка просроченных книг
     [HttpGet("overdue")]
     public IActionResult GetOverdueBooks()
     {
-        return Ok(_bookRepository.GetOverdueBooks());
+        var books = _bookRepository.GetByCondition(b => 
+            b.ReturnDueTime != null && b.ReturnDueTime < DateTime.Now).ToList();
+        
+        return Ok(books);
     }
 
     // Загрузка изображения
-    [HttpPost("{id}/upload-image")]
+    [HttpPost("{id}/image")]
     public IActionResult UploadImage(int id, IFormFile imageFile)
     {
         if (imageFile == null || imageFile.Length == 0)
+        {
             return BadRequest("Invalid file");
+        }
 
-        try
-        {
-            _bookRepository.AddOrUpdateImage(id, imageFile);
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        _bookRepository.AddOrUpdateImage(id, imageFile);
+        
+        return Ok();
     }
 }

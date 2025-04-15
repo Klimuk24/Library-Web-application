@@ -15,7 +15,7 @@ public class AuthorService : IAuthorService
 
     public Author GetById(int id)
     {
-        return _authorRepository.GetById(id);
+        return _authorRepository.GetSingle(x => x.Id == id);
     }
 
     public IEnumerable<Author> GetAll()
@@ -26,7 +26,9 @@ public class AuthorService : IAuthorService
     public void Create(Author author)
     {
         if (author == null)
+        {
             throw new ArgumentNullException(nameof(author));
+        }
 
         _authorRepository.Add(author);
         _authorRepository.Save();
@@ -35,7 +37,9 @@ public class AuthorService : IAuthorService
     public void Update(Author author)
     {
         if (author == null)
+        {
             throw new ArgumentNullException(nameof(author));
+        }
 
         _authorRepository.Update(author);
         _authorRepository.Save();
@@ -43,10 +47,13 @@ public class AuthorService : IAuthorService
 
     public void Delete(int id)
     {
-        var author = _authorRepository.GetById(id);
+        var author = _authorRepository.GetSingle(x => x.Id == id);
+        
         if (author == null)
+        {
             throw new KeyNotFoundException($"Author with id {id} not found");
-
+        }
+        
         _authorRepository.Delete(author);
         _authorRepository.Save();
     }

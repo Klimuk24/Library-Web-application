@@ -1,5 +1,5 @@
 ﻿using Library_Web_application.Data.Entities;
-using Library_Web_application.Models;
+using Library_Web_application.Infrastructure.Models;
 
 namespace Library_Web_application.Data.Repository.Interfaces
 {

@@ -2,7 +2,7 @@
 using Library_Web_application.Data.Context;
 using Library_Web_application.Data.Entities;
 using Library_Web_application.Data.Repository.Interfaces;
-using Library_Web_application.Models;
+using Library_Web_application.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_Web_application.Data.Repository
@@ -17,11 +17,6 @@ namespace Library_Web_application.Data.Repository
         {
             return DbSet.Include(a => a.Books).ToList();
         }
-
-        public override Author GetById(int id)
-        {
-            return DbSet.Include(a => a.Books).FirstOrDefault(a => a.Id == id);
-        }
         
         public PagedResult<Author> GetPagedAuthors(int pageNumber, int pageSize, string searchTerm = null)
         {
@@ -30,7 +25,8 @@ namespace Library_Web_application.Data.Repository
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 filter = a => a.FirstName.Contains(searchTerm) 
-                              || a.LastName.Contains(searchTerm);
+                              || a.LastName.Contains(searchTerm)
+                              || a.Country.Contains(searchTerm);
             }
 
             return GetPaged(query => query.OrderBy(a => a.LastName),

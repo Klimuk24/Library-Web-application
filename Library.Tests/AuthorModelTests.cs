@@ -6,7 +6,6 @@ namespace Library.Tests;
 public class AuthorModelTests
 {
     [Theory]
-    //[InlineData(null, null, null, null, false)] - данный вариант не сработает из за Required полей  
     [InlineData("Лев", "Толстой", "Россия", true)]
     public void FirstName_Validation(string name, string lastName, string country, bool isValid)
     {

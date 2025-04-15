@@ -1,21 +1,19 @@
-using Library_Web_application.Models;
+using Library_Web_application.Infrastructure.Models;
 
 namespace Library_Web_application.Middleware;
 
+/// <summary> Глобальная обработка исключений </summary>
 public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly IHostEnvironment _env;
 
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger,
-        IHostEnvironment env)
+        ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -40,7 +38,7 @@ public class ExceptionHandlingMiddleware
         {
             StatusCode = context.Response.StatusCode,
             Message = exception.Message,
-            StackTrace = _env.IsDevelopment() ? exception.StackTrace : null
+            StackTrace = exception.StackTrace,
         };
 
         await context.Response.WriteAsync(response.ToString());

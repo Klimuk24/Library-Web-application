@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Library_Web_application.Data.Context;
 using Library_Web_application.Data.Repository.Interfaces;
-using Library_Web_application.Models;
+using Library_Web_application.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_Web_application.Data.Repository;
@@ -27,9 +27,9 @@ public class BaseRepository<T>: IRepository<T> where T : class
         return DbSet.Where(expression);
     }
 
-    public virtual T GetById(int id)
+    public T? GetSingle(Expression<Func<T, bool>> expression)
     {
-        return DbSet.Find(id);
+        return DbSet.SingleOrDefault(expression);
     }
 
     public void Add(T entity)
